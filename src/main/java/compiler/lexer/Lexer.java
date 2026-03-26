@@ -1,4 +1,4 @@
-package compiler;
+package compiler.lexer;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -7,7 +7,7 @@ import java.util.Stack;
 import compiler.util.Token;
 import compiler.util.TokenType;
 
-public class Lexer {
+class Lexer {
     private final String source;
     private int position;
     private char currentChar;

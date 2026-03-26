@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import compiler.lexer.LexerWrapper;
 import compiler.util.Token;
 import compiler.util.TokenType;
 
 public class Compiler {
 
     public static void main(String[] args) throws FileNotFoundException {
-        File file = new File("D:\\Code-Stuff\\Assignment\\CD-Lab\\compiler\\src\\main\\java\\compiler\\input.py");
+        File file = new File("input.py");
         StringBuilder source = new StringBuilder();
         try(Scanner sc = new Scanner(file)){
             while(sc.hasNextLine()){
@@ -26,7 +27,7 @@ public class Compiler {
         System.out.println("Scanning source code: \n" + sourceCode);
         System.out.println("--------------------------------------------------");
         
-        Lexer lexer = new Lexer(sourceCode);
+        LexerWrapper lexer = new LexerWrapper(sourceCode);
         Token token = lexer.getNextToken();
         
         while (token.type() != TokenType.EOF) {
