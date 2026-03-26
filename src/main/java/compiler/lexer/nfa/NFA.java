@@ -11,6 +11,10 @@ public class NFA {
         this.startState = startState;
     }
 
+    public State getStartState() {
+        return startState;
+    }
+
     // Simulates the NFA against an input string
     public boolean matches(String input) {
         Set<State> currentStates = getEpsilonClosure(Set.of(startState));
