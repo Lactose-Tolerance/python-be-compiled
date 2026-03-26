@@ -26,4 +26,12 @@ public class ParsingTable {
     public Integer getGoto(int state, NonTerminal nonTerminal) {
         return gotoTable.getOrDefault(state, new HashMap<>()).get(nonTerminal);
     }
+
+    public Map<Integer, Map<Terminal, Action>> getActionTable() {
+        return actionTable;
+    }
+
+    public Map<Integer, Map<NonTerminal, Integer>> getGotoTable() {
+        return gotoTable;
+    }
 }
