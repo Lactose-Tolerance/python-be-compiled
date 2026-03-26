@@ -1,6 +1,6 @@
 package compiler.parser.util.expression;
 
-import compiler.lexer.util.Token;
+import compiler.util.Token;
 
 public record BinaryOp(
     Expression left, 
