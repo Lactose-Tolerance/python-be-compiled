@@ -4,8 +4,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
 
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.lexer.util.Token;
+import compiler.lexer.util.TokenType;
 
 class Lexer {
     private final String source;

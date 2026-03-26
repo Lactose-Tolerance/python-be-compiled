@@ -1,6 +1,6 @@
 package compiler.lexer;
 
-import compiler.util.Token;
+import compiler.lexer.util.Token;
 
 public class LexerWrapper {
     private final Lexer lexer;

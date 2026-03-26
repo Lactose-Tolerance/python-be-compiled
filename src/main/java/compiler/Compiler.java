@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import compiler.lexer.LexerWrapper;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.lexer.util.Token;
+import compiler.lexer.util.TokenType;
 
 public class Compiler {
 
