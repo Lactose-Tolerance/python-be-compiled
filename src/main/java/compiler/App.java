@@ -30,7 +30,7 @@ public class App {
             System.out.println(currentToken);
 
         } catch (IOException e) {
-            System.err.println("Could not read test_script.py: " + e.getMessage());
+            System.err.println("Could not read test_script.spy: " + e.getMessage());
         }
     }
 }
