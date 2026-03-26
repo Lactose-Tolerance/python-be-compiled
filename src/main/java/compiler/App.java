@@ -1,36 +1,54 @@
 package compiler;
 
-import compiler.lexer.LexerAPI;
-import compiler.util.Token;
-import compiler.util.TokenType;
-
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
+
+import compiler.lexer.LexerAPI;
+import compiler.parser.CLRParser;
+import compiler.parser.grammar.Grammar;
+import compiler.parser.table.CLRTableGenerator;
+import compiler.parser.table.ParsingTable;
+import compiler.parser.util.GrammarLoader;
 
 public class App {
+    
+    private static final String TERMINALS_FILE = "config/terminals.config";
+    private static final String NON_TERMINALS_FILE = "config/nonterminals.config";
+    private static final String GRAMMAR_FILE = "config/grammar.config";
+    private static final String SOURCE_FILE = "test_script.spy";
+
     public static void main(String[] args) {
         try {
-            String sourceCode = Files.readString(Path.of("test_script.spy"));
-            
-            System.out.println("--- Source Code ---");
+            System.out.println("--- 1. Loading Configuration ---");
+            Grammar grammar = GrammarLoader.load(TERMINALS_FILE, NON_TERMINALS_FILE, GRAMMAR_FILE);
+            System.out.println("Grammar loaded with " + grammar.getProductions().size() + " productions.");
+
+            System.out.println("\n--- 2. Generating CLR(1) Parsing Table ---");
+            CLRTableGenerator generator = new CLRTableGenerator(grammar);
+            ParsingTable table = generator.generate();
+            System.out.println("Parsing Table generated successfully.");
+
+            System.out.println("\n--- 3. Reading Source Code ---");
+            String sourceCode = Files.readString(Path.of(SOURCE_FILE));
             System.out.println(sourceCode);
-            System.out.println("\n--- Lexical Analysis via LexerAPI ---");
 
-            LexerAPI lexerAPI = new LexerAPI(sourceCode);
-
-            // Simulating how a parser will consume the tokens
-            Token currentToken = lexerAPI.getNextToken();
-            while (currentToken.type() != TokenType.EOF) {
-                System.out.println(currentToken);
-                currentToken = lexerAPI.getNextToken();
-            }
+            System.out.println("\n--- 4. Lexical & Syntax Analysis ---");
+            LexerAPI lexer = new LexerAPI(sourceCode);
+            CLRParser parser = new CLRParser(table);
             
-            // Print the EOF token at the end
-            System.out.println(currentToken);
+            boolean success = parser.parse(lexer);
+            if (success) {
+                System.out.println("Compilation successful: The source code is syntactically valid.");
+            }
 
         } catch (IOException e) {
-            System.err.println("Could not read test_script.py: " + e.getMessage());
+            System.err.println("File IO Error: Make sure configuration files and source file exist.");
+            System.err.println(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Configuration Error: " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.err.println("Compilation Error: " + e.getMessage());
         }
     }
 }
