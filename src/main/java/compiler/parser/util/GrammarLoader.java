@@ -18,65 +18,39 @@ import compiler.util.TokenType;
 public class GrammarLoader {
 
     /**
-     * Orchestrates the loading of the entire grammar from configuration files.
-     * Terminals are automatically loaded from the TokenType enum.
+     * Loads the grammar entirely from a single file.
+     * - Terminals are automatically derived from the TokenType enum.
+     * - Non-Terminals are dynamically inferred (any symbol not a Terminal is a Non-Terminal).
+     * - The Start Symbol is the LHS of the very first valid production rule.
      */
-    public static Grammar load(String nonTerminalsFile, String grammarFile) throws IOException {
+    public static Grammar load(String grammarFile) throws IOException {
         Map<String, Terminal> terminals = loadTerminalsFromEnum();
-        Map<String, NonTerminal> nonTerminals = loadNonTerminals(Path.of(nonTerminalsFile));
+        Map<String, NonTerminal> nonTerminals = new HashMap<>();
+        Grammar grammar = null;
 
-        // Assume the first non-terminal in the file is the Start Symbol
-        String startSymbolName = Files.readAllLines(Path.of(nonTerminalsFile)).stream()
-                .filter(line -> !line.trim().isEmpty() && !line.startsWith("#"))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Non-terminals config is empty"));
-
-        Grammar grammar = new Grammar(nonTerminals.get(startSymbolName));
-        loadProductions(Path.of(grammarFile), grammar, terminals, nonTerminals);
-
-        return grammar;
-    }
-
-    /**
-     * Automatically maps every TokenType defined in the enum to a Terminal object.
-     */
-    private static Map<String, Terminal> loadTerminalsFromEnum() {
-        Map<String, Terminal> map = new HashMap<>();
-        for (TokenType type : TokenType.values()) {
-            map.put(type.name(), new Terminal(type));
+        Path path = Path.of(grammarFile);
+        if (!Files.exists(path)) {
+            throw new IOException("Grammar file not found: " + grammarFile);
         }
-        return map;
-    }
-
-    private static Map<String, NonTerminal> loadNonTerminals(Path path) throws IOException {
-        Map<String, NonTerminal> map = new HashMap<>();
-        if (!Files.exists(path)) return map;
 
         List<String> lines = Files.readAllLines(path);
         for (String line : lines) {
             line = line.trim();
-            if (line.isEmpty() || line.startsWith("//")) continue;
-            map.put(line, new NonTerminal(line));
-        }
-        return map;
-    }
-
-    private static void loadProductions(Path path, Grammar grammar, Map<String, Terminal> terminals, Map<String, NonTerminal> nonTerminals) throws IOException {
-        if (!Files.exists(path)) return;
-
-        List<String> lines = Files.readAllLines(path);
-        for (String line : lines) {
-            line = line.trim();
-            if (line.isEmpty() || line.startsWith("//")) continue;
+            if (line.isEmpty() || line.startsWith("#")) continue;
 
             String[] parts = line.split("->");
             if (parts.length < 1 || parts.length > 2) {
                 throw new IllegalArgumentException("Invalid production format (must contain '->'): " + line);
             }
 
+            // Extract the Left-Hand Side (LHS)
             String lhsName = parts[0].trim();
-            NonTerminal lhs = nonTerminals.get(lhsName);
-            if (lhs == null) throw new IllegalArgumentException("Unknown LHS non-terminal in grammar: " + lhsName);
+            NonTerminal lhs = nonTerminals.computeIfAbsent(lhsName, NonTerminal::new);
+
+            // The first LHS we encounter becomes the Start Symbol for our Grammar
+            if (grammar == null) {
+                grammar = new Grammar(lhs);
+            }
 
             // Handle empty RHS (epsilon production where nothing follows '->')
             String rhsString = parts.length == 2 ? parts[1] : "";
@@ -96,18 +70,35 @@ public class GrammarLoader {
                         if (symName.isEmpty()) continue;
 
                         if (terminals.containsKey(symName)) {
+                            // It's a known Terminal
                             rhs.add(terminals.get(symName));
-                        } else if (nonTerminals.containsKey(symName)) {
-                            rhs.add(nonTerminals.get(symName));
                         } else {
-                            throw new IllegalArgumentException("Unknown symbol in production RHS: '" + symName + "' in rule: " + line);
+                            // If it's not a Terminal, it must be a Non-Terminal
+                            rhs.add(nonTerminals.computeIfAbsent(symName, NonTerminal::new));
                         }
                     }
                 }
 
-                // Add each variation as its own discrete production to the Grammar
+                // Add each variation as its own discrete production
                 grammar.addProduction(new Production(lhs, rhs));
             }
         }
+
+        if (grammar == null) {
+            throw new RuntimeException("Grammar file is empty or contains no valid rules.");
+        }
+
+        return grammar;
+    }
+
+    /**
+     * Automatically maps every TokenType defined in the enum to a Terminal object.
+     */
+    private static Map<String, Terminal> loadTerminalsFromEnum() {
+        Map<String, Terminal> map = new HashMap<>();
+        for (TokenType type : TokenType.values()) {
+            map.put(type.name(), new Terminal(type));
+        }
+        return map;
     }
 }
