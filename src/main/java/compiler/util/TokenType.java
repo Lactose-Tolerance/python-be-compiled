@@ -15,7 +15,7 @@ public enum TokenType {
     
     LBRACKET, RBRACKET, COMMA,
     
-    IF, ELSE, PRINT, INPUT,
+    IF, ELIF, ELSE, PRINT, INPUT,
 
     // FOR, IN, WHILE,
     

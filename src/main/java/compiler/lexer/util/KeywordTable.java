@@ -13,6 +13,7 @@ public class KeywordTable {
 
     private void setupKeywords() {
         keywords.put("if", TokenType.IF);
+        keywords.put("elif", TokenType.ELIF);
         keywords.put("else", TokenType.ELSE);
         keywords.put("print", TokenType.PRINT);
         // keywords.put("for", TokenType.FOR);
