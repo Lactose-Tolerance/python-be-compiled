@@ -4,6 +4,8 @@ import java.util.Set;
 import java.util.Stack;
 
 import compiler.lexer.LexerAPI;
+import compiler.parser.ast.ASTBuilder;
+import compiler.parser.ast.ASTVisualizer;
 import compiler.parser.grammar.Production;
 import compiler.parser.grammar.Terminal;
 import compiler.parser.table.Action;
@@ -13,6 +15,7 @@ import compiler.util.TokenType;
 
 public class CLRParser {
     private final ParsingTable table;
+    private final ASTBuilder astBuilder = new ASTBuilder();
 
     // Define synchronizing tokens that act as safe "landing zones" for recovery
     private static final Set<TokenType> SYNC_TOKENS = Set.of(
@@ -66,10 +69,12 @@ public class CLRParser {
             switch (action.getType()) {
                 case SHIFT -> {
                     stateStack.push(action.getTargetState());
+                    astBuilder.shift(currentToken);
                     currentToken = lexer.getNextToken();
                 }
                 case REDUCE -> {
                     Production prod = action.getRule();
+                    astBuilder.reduce(prod);
                     int rhsSize = prod.getRightHandSide().size();
                     
                     // Pop RHS symbols from the stack
@@ -92,6 +97,7 @@ public class CLRParser {
                         return false;
                     } else {
                         System.out.println("Parse successful!");
+                        ASTVisualizer.generateHTML(astBuilder.getRoot(), "ast_graph.html");
                         return true;
                     }
                 }
