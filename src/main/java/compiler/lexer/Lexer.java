@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import compiler.lexer.extractors.*;
+import compiler.lexer.extractors.CommentExtractor;
+import compiler.lexer.extractors.IdentifierExtractor;
+import compiler.lexer.extractors.NumberExtractor;
+import compiler.lexer.extractors.StringExtractor;
+import compiler.lexer.extractors.SymbolExtractor;
+import compiler.lexer.extractors.TokenExtractor;
 import compiler.lexer.util.CharReader;
 import compiler.lexer.util.IndentationTracker;
 import compiler.lexer.util.KeywordTable;
@@ -18,7 +23,6 @@ public class Lexer {
     private final List<TokenExtractor> extractors;
     private final SymbolTable symbolTable;
 
-    // <-- UPDATED: Now takes filePath and throws IOException
     public Lexer(String filePath) throws IOException {
         this.reader = new CharReader(filePath);
         this.indentTracker = new IndentationTracker();
@@ -28,6 +32,7 @@ public class Lexer {
         KeywordTable keywordTable = new KeywordTable();
 
         extractors.add(new StringExtractor());
+        extractors.add(new CommentExtractor());
         extractors.add(new IdentifierExtractor(keywordTable));
         extractors.add(new NumberExtractor());
         extractors.add(new SymbolExtractor()); 
@@ -41,7 +46,6 @@ public class Lexer {
         List<Token> tokens = new ArrayList<>();
         boolean isAtLineStart = true;
 
-        // <-- UPDATED: Wrapped in try-finally to close the file stream
         try {
             while (!reader.isAtEnd()) {
                 char c = reader.peek();
@@ -79,11 +83,17 @@ public class Lexer {
                 for (TokenExtractor extractor : extractors) {
                     if (extractor.canHandle(c)) {
                         Token token = extractor.extract(reader, startLine, startCol);
-                        tokens.add(token);
-                        
-                        if (token.type() == TokenType.IDENTIFIER) {
-                            symbolTable.addSymbol(token.lexeme(), token.line(), token.column());
+                        if (token.type() == TokenType.UNKNOWN) {
+                            System.err.println("Lexical Error: Malformed token '" + 
+                                token.lexeme() + "' at line " + token.line() + ":" + token.column());
+                        } 
+                        else if (token.type() != TokenType.COMMENT) {
+                            tokens.add(token);
+                            if (token.type() == TokenType.IDENTIFIER) {
+                                symbolTable.addSymbol(token.lexeme(), token.line(), token.column());
+                            }
                         }
+                        
                         matched = true;
                         break;
                     }
@@ -98,7 +108,6 @@ public class Lexer {
             tokens.add(new Token(TokenType.EOF, "", reader.getLine(), reader.getColumn()));
             
         } finally {
-            // Guarantee the file lock is released
             try {
                 reader.close();
             } catch (IOException e) {

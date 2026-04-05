@@ -21,5 +21,5 @@ public enum TokenType {
     
     NEWLINE, INDENT, DEDENT,
     
-    EOF, UNKNOWN
+    EOF, UNKNOWN, COMMENT
 }

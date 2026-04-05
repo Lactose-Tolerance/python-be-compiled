@@ -7,6 +7,7 @@ import compiler.lexer.nfa.visualizer.NFAVisualizer;
 import compiler.lexer.util.CharReader;
 import compiler.lexer.util.KeywordTable;
 import compiler.util.Token;
+import compiler.util.TokenType;
 
 public class IdentifierExtractor implements TokenExtractor {
     private final KeywordTable keywordTable;
@@ -46,7 +47,7 @@ public class IdentifierExtractor implements TokenExtractor {
         
         String text = sb.toString();
         if (!nfa.matches(text)) {
-            throw new RuntimeException("Lexical Error: Invalid Identifier at line " + startLine);
+            return new Token(TokenType.UNKNOWN, text, startLine, startCol);
         }
         
         return new Token(keywordTable.getTokenType(text), text, startLine, startCol);

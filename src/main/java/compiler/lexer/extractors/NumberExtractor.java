@@ -54,7 +54,7 @@ public class NumberExtractor implements TokenExtractor {
         Set<State> finalStates = nfa.getAcceptedStates(text);
         
         if (finalStates.isEmpty()) {
-            throw new RuntimeException("Lexical Error: Malformed number '" + text + "' at line " + startLine);
+            return new Token(TokenType.UNKNOWN, text, startLine, startCol);
         }
         
         TokenType type = finalStates.contains(floatAcceptState) ? TokenType.FLOAT : TokenType.INTEGER;

@@ -13,13 +13,59 @@ public class StringExtractor implements TokenExtractor {
 
     public StringExtractor() {
         State strS0 = new State(false);
-        State strS1 = new State(false);
-        State strS2 = new State(true);
+        State acceptS = new State(true);  // Successfully closed string
         
-        strS0.addTransition(new Transition(c -> c == '"', strS1, "\\\""));
-        strS1.addTransition(new Transition(c -> c != '"', strS1, "[^\\\"]"));
-        strS1.addTransition(new Transition(c -> c == '"', strS2, "\\\""));
+        // ==========================================
+        // PATH 1: Double-Quoted Strings ("...")
+        // ==========================================
+        State doubleS1 = new State(false); // Inside double-quote body
+        State doubleEscapeS = new State(false); // Escape character triggered
         
+        // 1. Open Double Quote
+        strS0.addTransition(new Transition(c -> c == '"', doubleS1, "\\\""));
+        
+        // 2. Normal characters (Anything except a double quote, backslash, AND newline)
+        doubleS1.addTransition(new Transition(
+            c -> c != '"' && c != '\\' && c != '\n' && c != '\r', 
+            doubleS1, 
+            "[^\\\"\\\\\\n\\r]"
+        ));
+        
+        // 3. Escape Sequence Initiator (\)
+        doubleS1.addTransition(new Transition(c -> c == '\\', doubleEscapeS, "\\\\"));
+        
+        // 4. Accept ANY character immediately following a backslash
+        doubleEscapeS.addTransition(new Transition(c -> true, doubleS1, "any"));
+        
+        // 5. Close Double Quote
+        doubleS1.addTransition(new Transition(c -> c == '"', acceptS, "\\\""));
+
+        // ==========================================
+        // PATH 2: Single-Quoted Strings ('...')
+        // ==========================================
+        State singleS1 = new State(false); // Inside single-quote body
+        State singleEscapeS = new State(false); // Escape character triggered
+        
+        // 1. Open Single Quote
+        strS0.addTransition(new Transition(c -> c == '\'', singleS1, "'"));
+        
+        // 2. Normal characters (Anything except a single quote, backslash, AND newline)
+        singleS1.addTransition(new Transition(
+            c -> c != '\'' && c != '\\' && c != '\n' && c != '\r', 
+            singleS1, 
+            "[^'\\\\\\n\\r]"
+        ));
+        
+        // 3. Escape Sequence Initiator (\)
+        singleS1.addTransition(new Transition(c -> c == '\\', singleEscapeS, "\\\\"));
+        
+        // 4. Accept ANY character immediately following a backslash
+        singleEscapeS.addTransition(new Transition(c -> true, singleS1, "any"));
+        
+        // 5. Close Single Quote
+        singleS1.addTransition(new Transition(c -> c == '\'', acceptS, "'"));
+        
+        // Build the combined NFA
         this.nfa = new NFA(strS0);
         NFAVisualizer.generateHTML(nfa, "string_nfa_graph.html");
     }
@@ -45,7 +91,8 @@ public class StringExtractor implements TokenExtractor {
         
         String text = sb.toString();
         if (!nfa.matches(text)) {
-            throw new RuntimeException("Lexical Error: Unterminated string at line " + startLine);
+            // Graceful recovery for unterminated strings
+            return new Token(TokenType.UNKNOWN, text, startLine, startCol);
         }
         
         return new Token(TokenType.STRING, text, startLine, startCol);

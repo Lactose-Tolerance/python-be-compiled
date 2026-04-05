@@ -1,16 +1,14 @@
-user_age = input("Enter age: ")
-base_factor = 2.5
-is_valid = True
+num1 = float(input('Enter first number : '))
+op = input("Enter operator : ")
+num2 = float(input("Enter second number : "))
 
-data_list = [1, 2] + [3, 4]
-university_tag = "JU_CSE_" * 3
-
-if user_age >= 18 and is_valid:
-    print(university_tag)
-    if base_factor != 0.0:
-        result = user_age * base_factor
-        print(result)
-elif not is_valid or user_age == 0:
-    print("Invalid User")
+if op == "+":
+    print(num1 + num2)
+elif op == "-":
+    print(num1-num2)
+elif op == "*":
+    print(num1*num2)
+elif op == "/":
+    print(num1/num2)
 else:
-    data_list = data_list + [5]
+    print("INVALID OPERATOR")
