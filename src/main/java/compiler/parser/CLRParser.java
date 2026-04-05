@@ -4,14 +4,14 @@ import java.util.Set;
 import java.util.Stack;
 
 import compiler.lexer.LexerAPI;
-import compiler.parser.ast.ASTBuilder;
-import compiler.parser.ast.ASTVisualizer;
 import compiler.parser.grammar.Production;
 import compiler.parser.grammar.Terminal;
 import compiler.parser.table.Action;
 import compiler.parser.table.ParsingTable;
 import compiler.util.Token;
 import compiler.util.TokenType;
+import compiler.util.ast.ASTBuilder;
+import compiler.util.ast.visualizer.ASTVisualizer;
 
 public class CLRParser {
     private final ParsingTable table;
