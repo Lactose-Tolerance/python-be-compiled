@@ -1,15 +1,15 @@
 package compiler.lexer.nfa.visualizer;
 
-import compiler.lexer.nfa.NFA;
-import compiler.lexer.nfa.State;
-import compiler.lexer.nfa.Transition;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+
+import compiler.lexer.nfa.NFA;
+import compiler.lexer.nfa.State;
+import compiler.lexer.nfa.Transition;
 
 public class NFAVisualizer {
 
@@ -46,8 +46,16 @@ public class NFAVisualizer {
             for (Transition t : current.getTransitions()) {
                 State target = t.getTargetState();
                 
+                // ESCAPE LOGIC ADDED HERE: Safely escape the label for JavaScript injection
+                String escapedLabel = t.getLabel()
+                        .replace("\\", "\\\\")
+                        .replace("'", "\\\\\\'")
+                        .replace("\"", "\\\"")
+                        .replace("\n", "\\n")
+                        .replace("\r", "");
+                
                 edgesList.append(String.format("  { from: %d, to: %d, label: '%s', arrows: 'to', font: {align: 'horizontal'} },\n",
-                        current.getId(), target.getId(), t.getLabel()));
+                        current.getId(), target.getId(), escapedLabel));
 
                 if (!visited.contains(target)) {
                     visited.add(target);
@@ -74,7 +82,7 @@ public class NFAVisualizer {
                         width: 100vw;
                         height: 100vh;
                         border: 1px solid lightgray;
-                        background-color: #f9f9f9;
+                        background-color: #f8f9fa;
                     }
                     body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
                     #info { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; z-index: 10; }
