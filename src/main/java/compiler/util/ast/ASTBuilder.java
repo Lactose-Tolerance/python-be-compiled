@@ -30,10 +30,10 @@ public class ASTBuilder {
 
         // Optional: AST Cleanup - Unwrap pass-through rules to flatten the tree
         // If a rule like 'expr -> term' just passes one non-terminal up, don't wrap it.
-        if (poppedNodes.size() == 1 && !(poppedNodes.get(0) instanceof TerminalNode) && !ruleName.equals("program")) {
-            nodeStack.push(poppedNodes.get(0));
-            return;
-        }
+        // if (poppedNodes.size() == 1 && !(poppedNodes.get(0) instanceof TerminalNode) && !ruleName.equals("program")) {
+        //     nodeStack.push(poppedNodes.get(0));
+        //     return;
+        // }
 
         // Construct the generated class name
         String className = NODES_PACKAGE + ASTGenerator.toPascalCase(ruleName) + "Node";
