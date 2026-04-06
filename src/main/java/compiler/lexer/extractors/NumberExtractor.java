@@ -7,8 +7,8 @@ import compiler.lexer.nfa.State;
 import compiler.lexer.nfa.Transition;
 import compiler.lexer.nfa.visualizer.NFAVisualizer;
 import compiler.lexer.util.CharReader;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class NumberExtractor implements TokenExtractor {
     private final NFA nfa;

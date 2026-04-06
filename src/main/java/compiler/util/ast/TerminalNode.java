@@ -1,6 +1,6 @@
 package compiler.util.ast;
 
-import compiler.util.Token;
+import compiler.util.token.Token;
 
 public class TerminalNode extends ASTNode {
     private final Token token;

@@ -13,9 +13,9 @@ import compiler.lexer.extractors.TokenExtractor;
 import compiler.lexer.util.CharReader;
 import compiler.lexer.util.IndentationTracker;
 import compiler.lexer.util.KeywordTable;
-import compiler.util.SymbolTable;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.util.symtab.SymbolTable;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class Lexer {
     private final CharReader reader;

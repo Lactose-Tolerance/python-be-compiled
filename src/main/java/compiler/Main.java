@@ -9,11 +9,16 @@ import compiler.parser.table.CLRTableGenerator;
 import compiler.parser.table.ParsingTable;
 import compiler.parser.util.GrammarLoader;
 import compiler.parser.util.ParsingTableFormatter;
+import compiler.util.symtab.SymbolTableVisualizer;
+import compiler.util.token.TokenWriter;
 
 public class Main {
     
     private static final String GRAMMAR_FILE = "config/grammar.config";
     private static final String TABLE_OUTPUT_FILE = "parsing_table.html";
+    private static final String SOURCE_FILE = "test_script.spy";
+    private static final String TOKEN_OUTPUT_FILE = "lexed_output.tkn";
+    private static final String SYMBOL_TABLE_OUTPUT_FILE = "symbol_table.html";
 
     public static void main(String[] args) {
         try {
@@ -31,13 +36,12 @@ public class Main {
             System.out.println("Parsing Table generated and saved to: " + TABLE_OUTPUT_FILE);
 
             // --- 3. Lexical Analysis (File path directly to Lexer) ---
-            String filePath = "test_script.spy";
+            String filePath = SOURCE_FILE;
             System.out.println("\n--- 3. Initializing LexerAPI with file: " + filePath + " ---");
             LexerAPI lexerAPI = new LexerAPI(filePath);
 
-            System.out.println("\n--- Generated Symbol Table ---");
-
-            lexerAPI.getSymbolTable().printTable();
+            SymbolTableVisualizer.generateHTML(lexerAPI.getSymbolTable(), SYMBOL_TABLE_OUTPUT_FILE);
+            TokenWriter.writeTokensToFile(lexerAPI.getAllTokens(), TOKEN_OUTPUT_FILE);
 
             // --- 4. Syntax Analysis (Parsing) ---
             System.out.println("\n--- 4. Syntax Analysis (Parsing) ---");

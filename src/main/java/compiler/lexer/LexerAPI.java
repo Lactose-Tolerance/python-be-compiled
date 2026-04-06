@@ -3,9 +3,9 @@ package compiler.lexer;
 import java.io.IOException; // <-- NEW IMPORT
 import java.util.List;
 
-import compiler.util.SymbolTable;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.util.symtab.SymbolTable;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class LexerAPI {
     private final List<Token> tokens;
@@ -41,4 +41,6 @@ public class LexerAPI {
     public boolean hasNext() {
         return position < tokens.size() && tokens.get(position).type() != TokenType.EOF;
     }
+
+    public List<Token> getAllTokens() { return tokens; }
 }

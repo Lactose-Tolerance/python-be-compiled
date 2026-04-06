@@ -1,4 +1,4 @@
-package compiler.util;
+package compiler.util.token;
 
 public record Token(TokenType type, String lexeme, int line, int column) {
     @Override

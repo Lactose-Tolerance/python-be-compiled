@@ -8,10 +8,10 @@ import compiler.parser.grammar.Production;
 import compiler.parser.grammar.Terminal;
 import compiler.parser.table.Action;
 import compiler.parser.table.ParsingTable;
-import compiler.util.Token;
-import compiler.util.TokenType;
 import compiler.util.ast.ASTBuilder;
 import compiler.util.ast.visualizer.ASTVisualizer;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class CLRParser {
     private final ParsingTable table;

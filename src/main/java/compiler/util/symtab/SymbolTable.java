@@ -1,4 +1,4 @@
-package compiler.util;
+package compiler.util.symtab;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,5 +24,9 @@ public class SymbolTable {
                 record.lexeme(), record.type(), record.line(), record.column()));
         }
         System.out.println("=================================================================\n");
+    }
+
+    public Map<String, SymbolRecord> getTable() {
+        return table;
     }
 }

@@ -16,7 +16,7 @@ import compiler.parser.grammar.NonTerminal;
 import compiler.parser.grammar.Production;
 import compiler.parser.grammar.Symbol;
 import compiler.parser.grammar.Terminal;
-import compiler.util.TokenType;
+import compiler.util.token.TokenType;
 
 public class CLRTableGenerator {
     private final Grammar grammar;

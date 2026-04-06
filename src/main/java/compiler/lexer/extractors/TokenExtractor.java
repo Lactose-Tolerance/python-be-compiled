@@ -1,7 +1,7 @@
 package compiler.lexer.extractors;
 
 import compiler.lexer.util.CharReader;
-import compiler.util.Token;
+import compiler.util.token.Token;
 
 public interface TokenExtractor {
     boolean canHandle(char c);

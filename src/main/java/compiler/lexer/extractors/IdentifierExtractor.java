@@ -6,8 +6,8 @@ import compiler.lexer.nfa.Transition;
 import compiler.lexer.nfa.visualizer.NFAVisualizer;
 import compiler.lexer.util.CharReader;
 import compiler.lexer.util.KeywordTable;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class IdentifierExtractor implements TokenExtractor {
     private final KeywordTable keywordTable;

@@ -1,6 +1,6 @@
 package compiler.parser.grammar;
 
-import compiler.util.TokenType;
+import compiler.util.token.TokenType;
 
 public record Terminal(TokenType type) implements Symbol {
     @Override

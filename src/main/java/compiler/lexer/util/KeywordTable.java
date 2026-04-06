@@ -1,8 +1,9 @@
 package compiler.lexer.util;
 
-import compiler.util.TokenType;
 import java.util.HashMap;
 import java.util.Map;
+
+import compiler.util.token.TokenType;
 
 public class KeywordTable {
     private final Map<String, TokenType> keywords = new HashMap<>();

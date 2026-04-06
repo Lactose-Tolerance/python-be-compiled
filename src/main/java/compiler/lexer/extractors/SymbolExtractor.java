@@ -1,15 +1,15 @@
 package compiler.lexer.extractors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import compiler.lexer.nfa.NFA;
 import compiler.lexer.nfa.State;
 import compiler.lexer.nfa.Transition;
 import compiler.lexer.nfa.visualizer.NFAVisualizer;
 import compiler.lexer.util.CharReader;
-import compiler.util.Token;
-import compiler.util.TokenType;
-
-import java.util.HashMap;
-import java.util.Map;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class SymbolExtractor implements TokenExtractor {
     private final NFA nfa;

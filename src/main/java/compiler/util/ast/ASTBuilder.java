@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Stack;
 
 import compiler.parser.grammar.Production;
-import compiler.util.Token;
+import compiler.util.token.Token;
 
 public class ASTBuilder {
     private final Stack<ASTNode> nodeStack = new Stack<>();

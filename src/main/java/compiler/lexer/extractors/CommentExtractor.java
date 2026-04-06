@@ -1,8 +1,8 @@
 package compiler.lexer.extractors;
 
 import compiler.lexer.util.CharReader;
-import compiler.util.Token;
-import compiler.util.TokenType;
+import compiler.util.token.Token;
+import compiler.util.token.TokenType;
 
 public class CommentExtractor implements TokenExtractor {
 
