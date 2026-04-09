@@ -9,7 +9,6 @@ import compiler.parser.grammar.Terminal;
 import compiler.parser.table.Action;
 import compiler.parser.table.ParsingTable;
 import compiler.util.ast.ASTBuilder;
-import compiler.util.ast.visualizer.ASTVisualizer;
 import compiler.util.token.Token;
 import compiler.util.token.TokenType;
 
@@ -101,7 +100,6 @@ public class CLRParser {
                         return false;
                     } else {
                         System.out.println("Parse successful!");
-                        ASTVisualizer.generateHTML(astBuilder.getRoot(), "ast_graph.html");
                         return true;
                     }
                 }
