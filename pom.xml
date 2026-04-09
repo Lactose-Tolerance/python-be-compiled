@@ -23,7 +23,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>compiler.Main</mainClass>
+                            <mainClass>compiler.ui.CompilerIDE</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
