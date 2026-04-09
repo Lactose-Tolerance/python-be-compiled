@@ -21,6 +21,7 @@ import compiler.util.ast.nodes.ExprNode;
 import compiler.util.ast.nodes.ExprTailNode;
 import compiler.util.ast.nodes.FactorNode;
 import compiler.util.ast.nodes.IfStmtNode;
+import compiler.util.ast.nodes.IndexExprNode;
 import compiler.util.ast.nodes.InputExprNode;
 import compiler.util.ast.nodes.ListNode;
 import compiler.util.ast.nodes.NotExprNode;
@@ -60,9 +61,19 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     /**
      * Master router for binary operations that strictly checks the operator.
      */
+    /**
+     * Master router for binary operations that strictly checks the operator.
+     */
     private SpyType resolveOperation(SpyType left, SpyType right, String op) {
         // If an error already occurred downstream, bubble it up
         if (left == SpyType.ERROR || right == SpyType.ERROR) return SpyType.ERROR;
+
+        // 0. OPTIMISTIC BYPASS FOR UNKNOWN TYPES
+        // If either side is UNKNOWN (e.g., from a list index), we assume the programmer 
+        // knows what they are doing and defer the actual type failure to runtime.
+        if (left == SpyType.UNKNOWN || right == SpyType.UNKNOWN) {
+            return SpyType.UNKNOWN; 
+        }
 
         // 1. STRING OPERATIONS
         if (left == SpyType.STRING || right == SpyType.STRING) {
@@ -119,7 +130,7 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
             case BOOLEAN -> SpyType.BOOLEAN;
             case IDENTIFIER -> {
                 SpyType type = symbolTable.getType(t.lexeme());
-                if (type == SpyType.UNKNOWN) {
+                if (type == SpyType.ERROR) {
                     System.err.println("Variable '" + t.lexeme() + "' used before assignment at line " + t.line() + ":" + t.column());
                 }
                 yield type;
@@ -130,20 +141,76 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
 
 
     // ==========================================================
-    // ASSIGNMENTS (Dynamic Updating)
+    // ASSIGNMENTS & INDEXING
     // ==========================================================
 
     @Override
     public SpyType visit(AssignmentNode node) {
-        // assignment -> IDENTIFIER ASSIGN expr
-        TerminalNode idNode = (TerminalNode) node.children.get(0);
-        String variableName = idNode.getToken().lexeme();
-
+        // assignment -> IDENTIFIER ASSIGN expr | index_expr ASSIGN expr
+        ASTNode lhsNode = node.children.get(0);
         SpyType rhsType = node.children.get(2).accept(this);
 
-        symbolTable.updateType(variableName, rhsType);
+        switch (lhsNode) {
+            case TerminalNode terminalNode -> {
+                // Case 1: Standard Variable Assignment
+                String variableName = terminalNode.getToken().lexeme();
+                symbolTable.updateType(variableName, rhsType);
+            }
+            case IndexExprNode idxNode -> {
+// Case 2: List Index Assignment
+String varName = ((TerminalNode) idxNode.children.get(0)).getToken().lexeme();
+SpyType varType = symbolTable.getType(varName);
+
+// Strings are immutable and do not support item assignment
+if (varType == SpyType.STRING) {
+    System.err.println("TypeError: 'STRING' object does not support item assignment");
+    return SpyType.ERROR;
+}
+
+// Verify that the index expression itself is semantically valid
+lhsNode.accept(this);
+
+// Note: We DO NOT update the symbol table here because the variable
+// remains a SpyType.LIST regardless of what is assigned into it.
+            }
+            default -> {
+            }
+        }
         
         return SpyType.NONE;
+    }
+
+    @Override
+    public SpyType visit(IndexExprNode node) {
+        // index_expr -> IDENTIFIER LBRACKET expr RBRACKET
+        TerminalNode idNode = (TerminalNode) node.children.get(0);
+        Token t = idNode.getToken();
+        String varName = t.lexeme();
+        
+        SpyType targetType = symbolTable.getType(varName);
+        
+        if (targetType == SpyType.UNKNOWN) {
+            System.err.println("Variable '" + varName + "' used before assignment at line " + t.line() + ":" + t.column());
+            return SpyType.ERROR;
+        }
+        
+        // Only LISTs and STRINGs can be subscripted
+        if (targetType != SpyType.LIST && targetType != SpyType.STRING) {
+            System.err.println("TypeError: '" + targetType + "' object is not subscriptable at line " + t.line() + ":" + t.column());
+            return SpyType.ERROR;
+        }
+
+        SpyType indexType = node.children.get(2).accept(this);
+        
+        // Indices must be integers
+        if (indexType != SpyType.INTEGER && indexType != SpyType.ERROR) {
+            System.err.println("TypeError: list indices must be integers, not " + indexType);
+            return SpyType.ERROR;
+        }
+
+        // If we subscript a string, we get a string. If a list, we return UNKNOWN 
+        // because we don't track the individual types inside heterogeneous lists.
+        return targetType == SpyType.STRING ? SpyType.STRING : SpyType.UNKNOWN;
     }
 
 
@@ -154,14 +221,10 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     @Override
     public SpyType visit(ArithExprNode node) {
         SpyType term = node.children.get(0).accept(this);
-        
-        // Cast to concrete ArithTailNode to access .children directly
         ArithTailNode tailNode = (ArithTailNode) node.children.get(1);
         SpyType tail = tailNode.accept(this);
         
         if (tail == SpyType.NONE) return term;
-        
-        // Extract operator (e.g., "+" or "-")
         String op = ((TerminalNode) tailNode.children.get(0)).getToken().lexeme();
         return resolveOperation(term, tail, op);
     }
@@ -170,13 +233,10 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     public SpyType visit(ArithTailNode node) {
         if (node.children.isEmpty()) return SpyType.NONE;
         SpyType term = node.children.get(1).accept(this);
-        
-        // Cast to concrete ArithTailNode
         ArithTailNode nextTailNode = (ArithTailNode) node.children.get(2);
         SpyType tail = nextTailNode.accept(this);
         
         if (tail == SpyType.NONE) return term;
-        
         String op = ((TerminalNode) nextTailNode.children.get(0)).getToken().lexeme();
         return resolveOperation(term, tail, op);
     }
@@ -184,14 +244,10 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     @Override
     public SpyType visit(TermNode node) {
         SpyType power = node.children.get(0).accept(this);
-        
-        // Cast to concrete TermTailNode
         TermTailNode tailNode = (TermTailNode) node.children.get(1);
         SpyType tail = tailNode.accept(this);
         
         if (tail == SpyType.NONE) return power;
-        
-        // Extract operator (e.g., "*", "/", etc.)
         String op = ((TerminalNode) tailNode.children.get(0)).getToken().lexeme();
         return resolveOperation(power, tail, op);
     }
@@ -200,13 +256,10 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     public SpyType visit(TermTailNode node) {
         if (node.children.isEmpty()) return SpyType.NONE;
         SpyType power = node.children.get(1).accept(this);
-        
-        // Cast to concrete TermTailNode
         TermTailNode nextTailNode = (TermTailNode) node.children.get(2);
         SpyType tail = nextTailNode.accept(this);
         
         if (tail == SpyType.NONE) return power;
-        
         String op = ((TerminalNode) nextTailNode.children.get(0)).getToken().lexeme();
         return resolveOperation(power, tail, op);
     }
@@ -216,8 +269,6 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
         if (node.children.size() == 1) return node.children.get(0).accept(this);
         SpyType left = node.children.get(0).accept(this);
         SpyType right = node.children.get(2).accept(this);
-        
-        // Extract operator (usually "**") - directly accesses .children
         String op = ((TerminalNode) node.children.get(1)).getToken().lexeme();
         return resolveOperation(left, right, op);
     }
@@ -225,8 +276,6 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     @Override
     public SpyType visit(FactorNode node) {
         if (node.children.size() == 1) return node.children.get(0).accept(this); // atom
-        
-        // Unary +/- factor
         SpyType type = node.children.get(1).accept(this);
         if (type == SpyType.STRING) {
             System.err.println("TypeError: Bad operand type for unary +/-: 'STRING'");
@@ -244,6 +293,7 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     public SpyType visit(AtomNode node) {
         switch (node.children.size()) {
             case 1 -> {
+                // Captures INTEGER, FLOAT, STRING, BOOLEAN, and crucially, index_expr
                 return node.children.get(0).accept(this);
             }
             case 3 -> {
@@ -254,10 +304,8 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
                 TerminalNode idNode = (TerminalNode) node.children.get(0);
                 String funcName = idNode.getToken().lexeme();
                 
-                // Evaluate the argument to catch any inner semantic errors
                 node.children.get(2).accept(this);
                 
-                // Basic built-in casting functions
                 if (funcName.equals("int")) return SpyType.INTEGER;
                 if (funcName.equals("float")) return SpyType.FLOAT;
                 if (funcName.equals("str")) return SpyType.STRING;
@@ -273,12 +321,12 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
 
     @Override
     public SpyType visit(InputExprNode node) {
-        return SpyType.STRING; // Python's input() always returns a string
+        return SpyType.STRING; 
     }
 
     @Override
     public SpyType visit(ListNode node) {
-        visitChildren(node.children); // Evaluate children for errors
+        visitChildren(node.children); 
         return SpyType.LIST;
     }
 
@@ -297,9 +345,9 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     @Override
     public SpyType visit(RelTailNode node) {
         if (node.children.isEmpty()) return SpyType.NONE;
-        node.children.get(1).accept(this); // evaluate arith_expr
-        node.children.get(2).accept(this); // evaluate rel_tail
-        return SpyType.BOOLEAN; // Comparisons always result in boolean
+        node.children.get(1).accept(this);
+        node.children.get(2).accept(this);
+        return SpyType.BOOLEAN;
     }
 
     @Override

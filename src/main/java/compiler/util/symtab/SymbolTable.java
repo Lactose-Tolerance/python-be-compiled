@@ -11,7 +11,7 @@ public class SymbolTable {
 
     public void addSymbol(String lexeme, int line, int column) {
         if (!table.containsKey(lexeme)) {
-            table.put(lexeme, new SymbolRecord(lexeme, "UNKNOWN", line, column));
+            table.put(lexeme, new SymbolRecord(lexeme, "ERROR", line, column));
         }
     }
 
@@ -29,10 +29,10 @@ public class SymbolTable {
             try {
                 return SpyType.valueOf(t);
             } catch (IllegalArgumentException e) {
-                return SpyType.UNKNOWN;
+                return SpyType.ERROR;
             }
         }
-        return SpyType.UNKNOWN;
+        return SpyType.ERROR;
     }
 
     public Map<String, SymbolRecord> getTable() {

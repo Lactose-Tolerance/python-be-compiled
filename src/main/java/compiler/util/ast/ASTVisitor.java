@@ -1,6 +1,34 @@
 package compiler.util.ast;
 
-import compiler.util.ast.nodes.*;
+import compiler.util.ast.nodes.AndExprNode;
+import compiler.util.ast.nodes.AndTailNode;
+import compiler.util.ast.nodes.ArithExprNode;
+import compiler.util.ast.nodes.ArithTailNode;
+import compiler.util.ast.nodes.AssignmentNode;
+import compiler.util.ast.nodes.AtomNode;
+import compiler.util.ast.nodes.CompOpNode;
+import compiler.util.ast.nodes.ElementTailNode;
+import compiler.util.ast.nodes.ElementsNode;
+import compiler.util.ast.nodes.ElifListNode;
+import compiler.util.ast.nodes.ElsePartNode;
+import compiler.util.ast.nodes.ExprNode;
+import compiler.util.ast.nodes.ExprTailNode;
+import compiler.util.ast.nodes.FactorNode;
+import compiler.util.ast.nodes.IfStmtNode;
+import compiler.util.ast.nodes.IndexExprNode;
+import compiler.util.ast.nodes.InputExprNode;
+import compiler.util.ast.nodes.ListNode;
+import compiler.util.ast.nodes.NotExprNode;
+import compiler.util.ast.nodes.PowerNode;
+import compiler.util.ast.nodes.PrintStmtNode;
+import compiler.util.ast.nodes.ProgramNode;
+import compiler.util.ast.nodes.RelExprNode;
+import compiler.util.ast.nodes.RelTailNode;
+import compiler.util.ast.nodes.SimpleStmtNode;
+import compiler.util.ast.nodes.StmtListNode;
+import compiler.util.ast.nodes.StmtNode;
+import compiler.util.ast.nodes.TermNode;
+import compiler.util.ast.nodes.TermTailNode;
 
 /**
  * The generic ASTVisitor interface.
@@ -43,4 +71,5 @@ public interface ASTVisitor<T> {
     T visit(StmtNode node);
     T visit(TermNode node);
     T visit(TermTailNode node);
+    T visit(IndexExprNode node);
 }
