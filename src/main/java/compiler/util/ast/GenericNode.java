@@ -22,4 +22,9 @@ public class GenericNode extends ASTNode {
         }
         return sb.toString();
     }
+
+    @Override
+        public <T> T accept(ASTVisitor<T> visitor) {
+            return visitor.visit(this);
+        }
 }

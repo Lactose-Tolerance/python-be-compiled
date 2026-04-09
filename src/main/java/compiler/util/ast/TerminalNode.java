@@ -15,4 +15,9 @@ public class TerminalNode extends ASTNode {
     public String printTree(int indentLevel) {
         return getIndent(indentLevel) + "Terminal(" + token.type() + ": '" + token.lexeme() + "')\n";
     }
+
+    @Override
+        public <T> T accept(ASTVisitor<T> visitor) {
+            return visitor.visit(this);
+        }
 }

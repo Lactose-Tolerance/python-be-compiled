@@ -46,6 +46,7 @@ public class ASTGenerator {
             package compiler.util.ast.nodes;
             
             import compiler.util.ast.ASTNode;
+            import compiler.util.ast.ASTVisitor;
             import java.util.List;
             
             public class %s extends ASTNode {
@@ -53,6 +54,11 @@ public class ASTGenerator {
                 
                 public %s(List<ASTNode> children) {
                     this.children = children;
+                }
+
+                @Override
+                public <T> T accept(ASTVisitor<T> visitor) {
+                    return visitor.visit(this);
                 }
                 
                 @Override

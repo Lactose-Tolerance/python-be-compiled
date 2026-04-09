@@ -1,6 +1,7 @@
 package compiler.util.ast.nodes;
 
 import compiler.util.ast.ASTNode;
+import compiler.util.ast.ASTVisitor;
 import java.util.List;
 
 public class TermTailNode extends ASTNode {
@@ -8,6 +9,11 @@ public class TermTailNode extends ASTNode {
 
     public TermTailNode(List<ASTNode> children) {
         this.children = children;
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
     }
 
     @Override
