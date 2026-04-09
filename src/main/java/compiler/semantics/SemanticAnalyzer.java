@@ -58,38 +58,44 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     }
 
     /**
-     * Master router for binary operations (Arithmetic and Concatenation).
-     * It strictly isolates Strings from Numeric types.
+     * Master router for binary operations that strictly checks the operator.
      */
-    private SpyType resolveBinaryOperation(SpyType left, SpyType right) {
+    private SpyType resolveOperation(SpyType left, SpyType right, String op) {
         // If an error already occurred downstream, bubble it up
         if (left == SpyType.ERROR || right == SpyType.ERROR) return SpyType.ERROR;
 
-        // 1. STRICT STRING ISOLATION
+        // 1. STRING OPERATIONS
         if (left == SpyType.STRING || right == SpyType.STRING) {
-            return combineString(left, right);
+            // String Concatenation (+)
+            if (op.equals("+")) {
+                if (left == SpyType.STRING && right == SpyType.STRING) {
+                    return SpyType.STRING;
+                }
+                System.err.println("TypeError: Cannot concatenate STRING with " + 
+                    (left == SpyType.STRING ? right : left));
+                return SpyType.ERROR;
+            }
+            
+            // String Multiplication (*)
+            if (op.equals("*")) {
+                if ((left == SpyType.STRING && right == SpyType.INTEGER) || 
+                    (left == SpyType.INTEGER && right == SpyType.STRING)) {
+                    return SpyType.STRING; // Allowed: "a" * 3 or 3 * "a"
+                }
+                System.err.println("TypeError: Can only multiply STRING by INTEGER.");
+                return SpyType.ERROR;
+            }
+            
+            // Block any other operation (-, /, **, etc.) if a string is involved
+            System.err.println("TypeError: Unsupported operation '" + op + "' involving STRING.");
+            return SpyType.ERROR;
         }
 
-        // 2. STRICT NUMERIC ISOLATION
-        return combineNumeric(left, right);
-    }
-
-    private SpyType combineString(SpyType left, SpyType right) {
-        if (left == SpyType.STRING && right == SpyType.STRING) {
-            return SpyType.STRING; // Allowed: "hello" + "world"
-        }
-        
-        // Type Mixing Blocked
-        System.err.println("TypeError: Cannot mix STRING with " + 
-            (left == SpyType.STRING ? right : left) + " in operations.");
-        return SpyType.ERROR;
-    }
-
-    private SpyType combineNumeric(SpyType left, SpyType right) {
+        // 2. STRICT NUMERIC OPERATIONS
         if (left == SpyType.FLOAT || right == SpyType.FLOAT) return SpyType.FLOAT;
         if (left == SpyType.INTEGER && right == SpyType.INTEGER) return SpyType.INTEGER;
         
-        System.err.println("TypeError: Invalid numeric operation between " + left + " and " + right);
+        System.err.println("TypeError: Invalid numeric operation '" + op + "' between " + left + " and " + right);
         return SpyType.ERROR;
     }
 
@@ -114,7 +120,7 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
             case IDENTIFIER -> {
                 SpyType type = symbolTable.getType(t.lexeme());
                 if (type == SpyType.UNKNOWN) {
-                    System.err.println("Variable '" + t.lexeme() + "' used before assignment at line " + t.line());
+                    System.err.println("Variable '" + t.lexeme() + "' used before assignment at line " + t.line() + ":" + t.column());
                 }
                 yield type;
             }
@@ -148,31 +154,61 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
     @Override
     public SpyType visit(ArithExprNode node) {
         SpyType term = node.children.get(0).accept(this);
-        SpyType tail = node.children.get(1).accept(this);
-        return tail == SpyType.NONE ? term : resolveBinaryOperation(term, tail);
+        
+        // Cast to concrete ArithTailNode to access .children directly
+        ArithTailNode tailNode = (ArithTailNode) node.children.get(1);
+        SpyType tail = tailNode.accept(this);
+        
+        if (tail == SpyType.NONE) return term;
+        
+        // Extract operator (e.g., "+" or "-")
+        String op = ((TerminalNode) tailNode.children.get(0)).getToken().lexeme();
+        return resolveOperation(term, tail, op);
     }
 
     @Override
     public SpyType visit(ArithTailNode node) {
         if (node.children.isEmpty()) return SpyType.NONE;
         SpyType term = node.children.get(1).accept(this);
-        SpyType tail = node.children.get(2).accept(this);
-        return tail == SpyType.NONE ? term : resolveBinaryOperation(term, tail);
+        
+        // Cast to concrete ArithTailNode
+        ArithTailNode nextTailNode = (ArithTailNode) node.children.get(2);
+        SpyType tail = nextTailNode.accept(this);
+        
+        if (tail == SpyType.NONE) return term;
+        
+        String op = ((TerminalNode) nextTailNode.children.get(0)).getToken().lexeme();
+        return resolveOperation(term, tail, op);
     }
 
     @Override
     public SpyType visit(TermNode node) {
         SpyType power = node.children.get(0).accept(this);
-        SpyType tail = node.children.get(1).accept(this);
-        return tail == SpyType.NONE ? power : resolveBinaryOperation(power, tail);
+        
+        // Cast to concrete TermTailNode
+        TermTailNode tailNode = (TermTailNode) node.children.get(1);
+        SpyType tail = tailNode.accept(this);
+        
+        if (tail == SpyType.NONE) return power;
+        
+        // Extract operator (e.g., "*", "/", etc.)
+        String op = ((TerminalNode) tailNode.children.get(0)).getToken().lexeme();
+        return resolveOperation(power, tail, op);
     }
 
     @Override
     public SpyType visit(TermTailNode node) {
         if (node.children.isEmpty()) return SpyType.NONE;
         SpyType power = node.children.get(1).accept(this);
-        SpyType tail = node.children.get(2).accept(this);
-        return tail == SpyType.NONE ? power : resolveBinaryOperation(power, tail);
+        
+        // Cast to concrete TermTailNode
+        TermTailNode nextTailNode = (TermTailNode) node.children.get(2);
+        SpyType tail = nextTailNode.accept(this);
+        
+        if (tail == SpyType.NONE) return power;
+        
+        String op = ((TerminalNode) nextTailNode.children.get(0)).getToken().lexeme();
+        return resolveOperation(power, tail, op);
     }
 
     @Override
@@ -180,7 +216,10 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
         if (node.children.size() == 1) return node.children.get(0).accept(this);
         SpyType left = node.children.get(0).accept(this);
         SpyType right = node.children.get(2).accept(this);
-        return resolveBinaryOperation(left, right);
+        
+        // Extract operator (usually "**") - directly accesses .children
+        String op = ((TerminalNode) node.children.get(1)).getToken().lexeme();
+        return resolveOperation(left, right, op);
     }
 
     @Override
