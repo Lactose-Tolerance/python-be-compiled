@@ -9,6 +9,7 @@ import compiler.parser.table.CLRTableGenerator;
 import compiler.parser.table.ParsingTable;
 import compiler.parser.util.GrammarLoader;
 import compiler.parser.util.ParsingTableFormatter;
+import compiler.semantics.SemanticAnalyzer;
 import compiler.util.symtab.SymbolTableVisualizer;
 import compiler.util.token.TokenWriter;
 
@@ -51,6 +52,15 @@ public class Main {
             boolean success = parser.parse(lexerAPI);
             if (success) {
                 System.out.println("Compilation successful: The source code is syntactically valid.");
+                
+                // --- 5. Semantic Analysis ---
+                System.out.println("\n--- 5. Semantic Analysis (Type Inference) ---");
+                SemanticAnalyzer analyzer = new SemanticAnalyzer(lexerAPI.getSymbolTable());
+                parser.getAstBuilder().getRoot().accept(analyzer); // Make sure astBuilder has a getter in CLRParser!
+                
+                // Regenerate the updated Symbol Table Visualization
+                SymbolTableVisualizer.generateHTML(lexerAPI.getSymbolTable(), "semantic_" + SYMBOL_TABLE_OUTPUT_FILE);
+                System.out.println("Semantic Analysis complete. Updated Symbol Table generated.");
             }
 
         } catch (IOException e) {

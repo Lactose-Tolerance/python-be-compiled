@@ -28,6 +28,10 @@ public class CLRParser {
         this.table = table;
     }
 
+    public ASTBuilder getAstBuilder() {
+        return astBuilder;
+    }
+
     /**
      * Executes the Shift-Reduce parsing algorithm against a token stream.
      * @param lexer The Lexer API providing tokens

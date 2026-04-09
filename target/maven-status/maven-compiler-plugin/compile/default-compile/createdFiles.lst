@@ -49,6 +49,7 @@ compiler\lexer\extractors\IdentifierExtractor.class
 compiler\parser\grammar\LR1Item.class
 compiler\util\symtab\SymbolTableVisualizer.class
 compiler\util\ast\nodes\AndTailNode.class
+compiler\semantics\SemanticAnalyzer$1.class
 compiler\util\ast\ASTNode.class
 compiler\util\ast\nodes\StmtListNode.class
 compiler\parser\CLRParser.class

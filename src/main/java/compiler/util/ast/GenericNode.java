@@ -24,7 +24,7 @@ public class GenericNode extends ASTNode {
     }
 
     @Override
-        public <T> T accept(ASTVisitor<T> visitor) {
-            return visitor.visit(this);
-        }
+    public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

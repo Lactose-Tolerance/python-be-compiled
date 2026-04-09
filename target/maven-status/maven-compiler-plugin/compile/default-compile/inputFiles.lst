@@ -28,6 +28,7 @@ D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compil
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\parser\table\ParsingTable.java
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\parser\util\GrammarLoader.java
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\parser\util\ParsingTableFormatter.java
+D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\semantics\SemanticAnalyzer.java
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\test\TestVisualizer.java
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\util\ast\ASTBuilder.java
 D:\Code-Stuff\Assignment\CD-Lab\compiler\python-be-compiled\src\main\java\compiler\util\ast\ASTGenerator.java

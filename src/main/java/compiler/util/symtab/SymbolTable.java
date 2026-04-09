@@ -15,15 +15,25 @@ public class SymbolTable {
         }
     }
 
-    public void printTable() {
-        System.out.println("\n=================================================================");
-        System.out.println(String.format("|| %-20s | %-15s | %-6s | %-6s ||", "Lexeme / Symbol", "Token Type", "Line", "Col"));
-        System.out.println("=================================================================");
-        for (SymbolRecord record : table.values()) {
-            System.out.println(String.format("|| %-20s | %-15s | %-6d | %-6d ||", 
-                record.lexeme(), record.type(), record.line(), record.column()));
+    public void updateType(String lexeme, SpyType type) {
+        if (table.containsKey(lexeme)) {
+            SymbolRecord old = table.get(lexeme);
+            // Overwrite the type field with the name of our inferred SpyType
+            table.put(lexeme, new SymbolRecord(old.lexeme(), type.name(), old.line(), old.column()));
         }
-        System.out.println("=================================================================\n");
+    }
+
+    public SpyType getType(String lexeme) {
+        if (table.containsKey(lexeme)) {
+            String t = table.get(lexeme).type();
+            if (t.equals("IDENTIFIER")) return SpyType.UNKNOWN; // Uninitialized
+            try {
+                return SpyType.valueOf(t);
+            } catch (IllegalArgumentException e) {
+                return SpyType.UNKNOWN;
+            }
+        }
+        return SpyType.UNKNOWN;
     }
 
     public Map<String, SymbolRecord> getTable() {
