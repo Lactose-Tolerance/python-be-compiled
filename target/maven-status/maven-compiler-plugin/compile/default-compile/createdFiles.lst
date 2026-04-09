@@ -34,6 +34,7 @@ compiler\util\ast\nodes\AndExprNode.class
 compiler\parser\table\CLRTableGenerator.class
 compiler\util\ast\nodes\ElementTailNode.class
 compiler\lexer\nfa\State.class
+compiler\semantics\SemanticAnalyzer.class
 compiler\lexer\Lexer.class
 compiler\lexer\nfa\NFA.class
 compiler\util\symtab\SpyType.class
