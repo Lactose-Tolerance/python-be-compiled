@@ -24,8 +24,8 @@ public class KeywordTable {
         keywords.put("and", TokenType.AND);
         keywords.put("or", TokenType.OR);
         keywords.put("not", TokenType.NOT);
-        keywords.put("True", TokenType.IDENTIFIER); 
-        keywords.put("False", TokenType.IDENTIFIER);
+        keywords.put("True", TokenType.TRUE);
+        keywords.put("False", TokenType.FALSE);
     }
 
     public TokenType getTokenType(String text) {

@@ -17,6 +17,8 @@ public enum TokenType {
     
     IF, ELIF, ELSE, PRINT, INPUT,
 
+    TRUE, FALSE,
+
     // FOR, IN, WHILE,
     
     NEWLINE, INDENT, DEDENT,
