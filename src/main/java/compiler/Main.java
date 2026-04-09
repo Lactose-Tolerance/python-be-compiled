@@ -50,9 +50,7 @@ public class Main {
             
             // The parser consumes the tokens from the lexer
             boolean success = parser.parse(lexerAPI);
-            if (success) {
-                System.out.println("Compilation successful: The source code is syntactically valid.");
-                
+            if (success) {                
                 // --- 5. Semantic Analysis ---
                 System.out.println("\n--- 5. Semantic Analysis (Type Inference) ---");
                 SemanticAnalyzer analyzer = new SemanticAnalyzer(lexerAPI.getSymbolTable());
@@ -60,7 +58,7 @@ public class Main {
                 
                 // Regenerate the updated Symbol Table Visualization
                 SymbolTableVisualizer.generateHTML(lexerAPI.getSymbolTable(), "semantic_" + SYMBOL_TABLE_OUTPUT_FILE);
-                System.out.println("Semantic Analysis complete. Updated Symbol Table generated.");
+                System.out.println("Semantic Analysis complete.");
             }
 
         } catch (IOException e) {

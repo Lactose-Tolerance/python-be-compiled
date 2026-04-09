@@ -1,4 +1,4 @@
-num1 = 5+3
+num1 = a
 op = input("Enter operator : ")
 num2 = 5*2.1
 

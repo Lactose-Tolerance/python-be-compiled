@@ -110,14 +110,11 @@ public class SemanticAnalyzer implements ASTVisitor<SpyType> {
             case INTEGER -> SpyType.INTEGER;
             case FLOAT -> SpyType.FLOAT;
             case STRING -> SpyType.STRING;
+            case BOOLEAN -> SpyType.BOOLEAN;
             case IDENTIFIER -> {
-                // Hardcoded handling for Booleans (since they parse as identifiers in .spy)
-                if (t.lexeme().equals("True") || t.lexeme().equals("False")) yield SpyType.BOOLEAN;
-                
                 SpyType type = symbolTable.getType(t.lexeme());
                 if (type == SpyType.UNKNOWN) {
-                    System.err.println("Semantic Warning: Variable '" + t.lexeme() + 
-                                       "' might be used before assignment at line " + t.line());
+                    System.err.println("Variable '" + t.lexeme() + "' used before assignment at line " + t.line());
                 }
                 yield type;
             }
